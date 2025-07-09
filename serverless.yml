@@ -1,0 +1,65 @@
+service: api-usuarios
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:PutItem
+            - dynamodb:GetItem
+            - dynamodb:Scan
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource: arn:aws:dynamodb:us-east-1:221889532284:table/Usuarios
+
+        - Effect: Allow
+          Action:
+            - sns:Publish
+          Resource: arn:aws:sns:us-east-1:221889532284:notificacionesUsuarios
+        - Effect: Allow
+          Action:
+            - ssm:GetParameter
+          Resource:
+            - arn:aws:ssm:us-east-1:221889532284:parameter/config/usuarios/*
+
+
+functions:
+  getUsuarios:
+    handler: handler.getUsuarios
+    events:
+      - httpApi:
+          path: /usuarios
+          method: get
+
+  createUsuario:
+    handler: handler.createUsuario
+    events:
+      - httpApi:
+          path: /usuarios
+          method: post
+
+  updateUsuario:
+    handler: handler.updateUsuario
+    events:
+      - httpApi:
+          path: /usuarios/{id}
+          method: put
+
+  deleteUsuario:
+    handler: handler.deleteUsuario
+    events:
+      - httpApi:
+          path: /usuarios/{id}
+          method: delete
+  enviarCorreo:
+    handler: handler.enviarCorreo
+    events:
+      - httpApi:
+          path: /notificar
+          method: post
+
