@@ -21,12 +21,21 @@ provider:
           Action:
             - sns:Publish
           Resource: arn:aws:sns:us-east-1:221889532284:notificacionesUsuarios
+
         - Effect: Allow
           Action:
             - ssm:GetParameter
           Resource:
             - arn:aws:ssm:us-east-1:221889532284:parameter/config/usuarios/*
 
+  httpApi:
+    authorizers:
+      cognitoAuthorizer:
+        type: jwt
+        identitySource: $request.header.Authorization
+        issuerUrl: https://cognito-idp.us-east-2.amazonaws.com/us-east-2_pyd4CjV9K
+        audience:
+          - 32m6n9e5butaulp9vbmf08utff
 
 functions:
   getUsuarios:
@@ -35,6 +44,8 @@ functions:
       - httpApi:
           path: /usuarios
           method: get
+          authorizer:
+            name: cognitoAuthorizer
 
   createUsuario:
     handler: handler.createUsuario
@@ -42,6 +53,8 @@ functions:
       - httpApi:
           path: /usuarios
           method: post
+          authorizer:
+            name: cognitoAuthorizer
 
   updateUsuario:
     handler: handler.updateUsuario
@@ -49,6 +62,8 @@ functions:
       - httpApi:
           path: /usuarios/{id}
           method: put
+          authorizer:
+            name: cognitoAuthorizer
 
   deleteUsuario:
     handler: handler.deleteUsuario
@@ -56,10 +71,14 @@ functions:
       - httpApi:
           path: /usuarios/{id}
           method: delete
+          authorizer:
+            name: cognitoAuthorizer
+
   enviarCorreo:
     handler: handler.enviarCorreo
     events:
       - httpApi:
           path: /notificar
           method: post
-
+          authorizer:
+            name: cognitoAuthorizer
